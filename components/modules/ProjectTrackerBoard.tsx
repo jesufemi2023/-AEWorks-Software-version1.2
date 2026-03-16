@@ -19,8 +19,9 @@ const ProjectTrackerBoard: React.FC<{setView: (view: View) => void}> = ({ setVie
 
     const canEditProject = (project: Project) => {
         if (!currentUser) return false;
-        if (isAdmin || isManager) return true;
-        return project.createdBy === currentUser.username;
+        if (isAdmin) return true;
+        if (isManager) return project.createdBy === currentUser.username;
+        return false; // Default to no edit for other roles like viewer
     };
 
     const filteredProjects = useMemo(() => projects.filter(p => 
@@ -80,7 +81,7 @@ const ProjectTrackerBoard: React.FC<{setView: (view: View) => void}> = ({ setVie
                                                     Details
                                                 </button>
                                                 <button onClick={() => { setCurrentProject(project); setView(View.DASHBOARD); }} className="text-[9px] font-black uppercase bg-slate-100 text-slate-500 px-2.5 py-1.5 rounded-lg hover:bg-slate-200">Open</button>
-                                                {!canEditProject(project) ? null : (
+                                                {!isAdmin ? null : (
                                                     <button 
                                                         onClick={() => handleDelete(project.projectCode)}
                                                         className="flex items-center gap-1.5 text-[9px] font-black uppercase px-3 py-1.5 rounded-lg bg-red-50 text-red-600 border border-red-100 hover:bg-red-600 hover:text-white transition-all ml-1 shadow-sm"

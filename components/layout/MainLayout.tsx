@@ -121,10 +121,13 @@ const MainLayout: React.FC<{onBack?: () => void}> = ({ onBack }) => {
 
     const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
     const isManager = currentUser?.role === 'manager';
+    const isViewer = currentUser?.role === 'viewer';
 
     const canEditCurrentProject = () => {
         if (!currentUser) return false;
-        if (isAdmin || isManager) return true;
+        if (isAdmin) return true;
+        if (isManager) return currentProject.createdBy === currentUser.username;
+        if (isViewer) return false;
         return currentProject.createdBy === currentUser.username;
     };
 

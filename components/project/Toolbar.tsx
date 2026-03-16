@@ -38,7 +38,9 @@ const Toolbar: React.FC<ToolbarProps> = ({ setView, onBack }) => {
 
     const canEditCurrentProject = () => {
         if (!currentUser) return false;
-        if (isAdmin || isManager) return true;
+        if (isAdmin) return true;
+        if (isManager) return currentProject.createdBy === currentUser.username;
+        if (isViewer) return false;
         return currentProject.createdBy === currentUser.username;
     };
 
@@ -208,7 +210,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ setView, onBack }) => {
                             <Button onClick={handleSaveProject} variant="primary" icon={isCommitting ? "fas fa-sync animate-spin" : "fas fa-save"} disabled={isCommitting} size="sm" className="whitespace-nowrap py-1.5 px-4 text-[10px] uppercase font-black shadow-md">
                                 {commitStatus === 'saving' ? 'Saving...' : commitStatus === 'syncing' ? 'Syncing...' : 'Save Project'}
                             </Button>
-                            {currentProject.projectCode && (
+                            {currentProject.projectCode && isAdmin && (
                                 <Button 
                                     onClick={() => {
                                         if (window.confirm(`SECURITY PROTOCOL: Are you sure you want to permanently delete project ${currentProject.projectCode}? This action cannot be undone.`)) {
