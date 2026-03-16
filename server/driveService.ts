@@ -77,7 +77,7 @@ class DriveService {
         const folderId = this.getFolderId();
         if (!folderId) throw new Error('Master Folder ID not configured');
 
-        return this.uploadJson('GLOBAL_DATA.json', data, folderId);
+        return this.uploadJson('AEWORKS_MASTER_VAULT.json', data, folderId);
     }
 
     async getGlobalData() {
@@ -86,7 +86,7 @@ class DriveService {
         if (!folderId) throw new Error('Master Folder ID not configured');
 
         const existing = await this.drive.files.list({
-            q: `'${folderId}' in parents and name = 'GLOBAL_DATA.json' and trashed = false`,
+            q: `'${folderId}' in parents and name = 'AEWORKS_MASTER_VAULT.json' and trashed = false`,
             fields: 'files(id)',
         });
 
