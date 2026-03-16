@@ -12,6 +12,7 @@ import PayrollManager from './components/modules/PayrollManager';
 import PublicFeedbackPortal from './components/portal/PublicFeedbackPortal';
 import { kpiMonitorHtml } from './components/modules/moduleContent';
 import * as db from './services/db';
+import { vaultService } from './services/vaultService';
 import { 
     INITIAL_USER_DATA, 
     INITIAL_CLIENTS_DATA, 
@@ -40,9 +41,13 @@ const App: React.FC = () => {
         const triggerSync = async () => {
             const meta = db.getSystemMeta();
             if (navigator.onLine && meta.driveAccessToken) {
+                // Ensure vaultService has the token
+                if (!vaultService.getToken()) {
+                    vaultService.setToken(meta.driveAccessToken);
+                }
                 console.log("Auto Polling: Checking Cloud Vault & Inbox...");
                 try {
-                    await db.syncWithCloud(undefined, (code) => {
+                    await db.syncWithCloud((code) => {
                         showNotification(`New Customer Feedback received for ${code}!`, 'warning');
                     });
                 } catch (e) {}
@@ -89,6 +94,8 @@ const App: React.FC = () => {
             }
 
             if (navigator.onLine && meta.driveAccessToken) {
+                // Ensure vaultService has the token
+                vaultService.setToken(meta.driveAccessToken);
                 try {
                     await db.syncWithCloud();
                 } catch (e) {

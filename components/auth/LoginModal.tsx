@@ -5,6 +5,7 @@ import Button from '../ui/Button';
 import Icon from '../ui/Icon';
 import { useAppContext } from '../../hooks/useAppContext';
 import * as db from '../../services/db';
+import { vaultService } from '../../services/vaultService';
 
 interface LoginModalProps {
     onLogin: (user: User) => void;
@@ -67,35 +68,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
     };
 
     const handleInitializeVault = () => {
-        if (!config.googleClientId) return;
-        setIsLoading(true);
-        try {
-            const client = (window as any).google.accounts.oauth2.initTokenClient({
-                client_id: config.googleClientId,
-                scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/userinfo.email',
-                callback: async (response: any) => {
-                    if (response.error) {
-                        setIsLoading(false);
-                        showNotification(`Google Error: ${response.error}`, "error");
-                        return;
-                    }
-                    const result = await db.initializeMasterVault(response.access_token);
-                    setIsLoading(false);
-                    if (result.success) {
-                        showNotification(result.message, 'success');
-                        setActiveTab('login');
-                        setLogo(db.getSystemLogo());
-                        setConfig(db.getSystemMeta());
-                    } else {
-                        showNotification(result.message, 'error');
-                    }
-                }
-            });
-            client.requestAccessToken();
-        } catch (e) {
-            showNotification("Auth System Offline.", "error");
-            setIsLoading(false);
-        }
+        showNotification("Vault initialization is now handled automatically on first push.", "success");
     };
 
     const handleGoogleDriveSync = () => {
@@ -123,7 +96,8 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
                         return;
                     }
                     
-                    const result = await db.syncWithCloud(response.access_token);
+                    vaultService.setToken(response.access_token);
+                    const result = await db.syncWithCloud();
                     setIsLoading(false);
                     
                     if (result.success) {
@@ -131,9 +105,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
                         setActiveTab('login');
                         setLogo(db.getSystemLogo());
                         setShowInitVault(false);
-                    } else if (result.vaultMissing) {
-                        showNotification(result.message, 'error');
-                        setShowInitVault(true);
                     } else {
                         showNotification(result.message, 'warning');
                     }
