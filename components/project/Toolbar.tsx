@@ -199,13 +199,13 @@ const Toolbar: React.FC<ToolbarProps> = ({ setView, onBack }) => {
             <div className="flex flex-row md:flex-wrap gap-1.5 mb-2 bg-white p-1.5 rounded-xl shadow-sm justify-start md:justify-between items-center relative z-[40] border border-slate-200">
                 <div className="flex flex-row flex-nowrap gap-1.5 items-center flex-grow overflow-x-auto no-scrollbar">
                     {onBack && (
-                        <Button onClick={onBack} variant="outline" icon="fas fa-arrow-left" size="sm" className="whitespace-nowrap py-1.5 px-3 text-[10px] uppercase font-black border-slate-300">
-                            Dashboard
+                        <Button onClick={onBack} variant="outline" icon="fas fa-home" size="sm" className="whitespace-nowrap py-1.5 px-4 text-[10px] uppercase font-black border-slate-300 bg-slate-50 hover:bg-slate-100">
+                            Home Dashboard
                         </Button>
                     )}
                     {!canEditCurrentProject() ? null : (
                         <>
-                            <Button onClick={handleSaveProject} variant="primary" icon={isCommitting ? "fas fa-sync animate-spin" : "fas fa-save"} disabled={isCommitting} size="sm" className="whitespace-nowrap py-1.5 px-3 text-[10px] uppercase font-black">
+                            <Button onClick={handleSaveProject} variant="primary" icon={isCommitting ? "fas fa-sync animate-spin" : "fas fa-save"} disabled={isCommitting} size="sm" className="whitespace-nowrap py-1.5 px-4 text-[10px] uppercase font-black shadow-md">
                                 {commitStatus === 'saving' ? 'Saving...' : commitStatus === 'syncing' ? 'Syncing...' : 'Save Project'}
                             </Button>
                             {currentProject.projectCode && (
@@ -217,19 +217,19 @@ const Toolbar: React.FC<ToolbarProps> = ({ setView, onBack }) => {
                                         }
                                     }} 
                                     variant="outline" 
-                                    icon="fas fa-trash" 
+                                    icon="fas fa-trash-alt" 
                                     size="sm" 
-                                    className="whitespace-nowrap py-1.5 px-3 text-[10px] uppercase font-black border-red-200 text-red-500 hover:bg-red-50"
+                                    className="whitespace-nowrap py-1.5 px-4 text-[10px] uppercase font-black border-red-200 text-red-500 hover:bg-red-600 hover:text-white transition-all"
                                 >
-                                    Delete
+                                    Delete Project
                                 </Button>
                             )}
                         </>
                     )}
-                    <Button onClick={() => setIsProjectListOpen(true)} variant="success" icon="fas fa-folder-open" size="sm" className="whitespace-nowrap py-1.5 px-3 text-[10px] uppercase font-black">Load</Button>
-                    <Button onClick={() => { resetProject(); setView(View.DASHBOARD); }} variant="warning" icon="fas fa-file" size="sm" className="whitespace-nowrap py-1.5 px-3 text-[10px] uppercase font-black">New</Button>
-                    <div className="hidden md:block w-px bg-slate-200 mx-1 h-5 flex-shrink-0"></div>
-                    <Button onClick={() => setView(View.TRACKER)} variant="primary" icon="fas fa-columns" size="sm" className="whitespace-nowrap py-1.5 px-3 text-[10px] uppercase font-black">Tracker</Button>
+                    <Button onClick={() => setIsProjectListOpen(true)} variant="success" icon="fas fa-folder-open" size="sm" className="whitespace-nowrap py-1.5 px-4 text-[10px] uppercase font-black shadow-sm">Load Project</Button>
+                    <Button onClick={() => { resetProject(); setView(View.DASHBOARD); }} variant="warning" icon="fas fa-plus" size="sm" className="whitespace-nowrap py-1.5 px-4 text-[10px] uppercase font-black shadow-sm">New Project</Button>
+                    <div className="hidden md:block w-px bg-slate-200 mx-2 h-6 flex-shrink-0"></div>
+                    <Button onClick={() => setView(View.TRACKER)} variant="primary" icon="fas fa-th-large" size="sm" className="whitespace-nowrap py-1.5 px-4 text-[10px] uppercase font-black shadow-sm">Project Board</Button>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -251,21 +251,21 @@ const Toolbar: React.FC<ToolbarProps> = ({ setView, onBack }) => {
 
                     {(!isAdmin && !isManager) ? null : (
                         <div className="relative" ref={dbMenuRef}>
-                            <button onClick={() => setIsDbMenuOpen(!isDbMenuOpen)} className={`flex items-center gap-2 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg border transition-all ${isDbMenuOpen ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-300'}`}>
-                                <Icon name="fas fa-database" />
-                                <span className="hidden sm:inline">Vault</span>
+                            <button onClick={() => setIsDbMenuOpen(!isDbMenuOpen)} className={`flex items-center gap-2 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg border transition-all ${isDbMenuOpen ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-300 shadow-sm'}`}>
+                                <Icon name="fas fa-cogs" />
+                                <span className="hidden sm:inline">System Management</span>
                             </button>
                             {isDbMenuOpen && (
                                 <div className="absolute top-[calc(100%+4px)] right-0 w-64 bg-white rounded-xl shadow-2xl border border-slate-200 py-1 z-[100] animate-fade-in origin-top-right">
-                                    <div className="px-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 mb-1">Repositories</div>
-                                    <button onClick={() => { setView(View.MANAGE_CLIENTS); setIsDbMenuOpen(false); }} className="w-full text-left px-3 py-2.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-3 font-bold border-b border-slate-50"><Icon name="fas fa-building" className="text-indigo-600 w-4"/> Clients</button>
-                                    <button onClick={() => { setView(View.MANAGE_CONTACTS); setIsDbMenuOpen(false); }} className="w-full text-left px-3 py-2.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-3 font-bold border-b border-slate-50"><Icon name="fas fa-address-card" className="text-teal-600 w-4"/> Personnel</button>
-                                    <button onClick={() => { setView(View.MANAGE_MATERIALS); setIsDbMenuOpen(false); }} className="w-full text-left px-3 py-2.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-3 font-bold border-b border-slate-50"><Icon name="fas fa-boxes" className="text-rose-600 w-4"/> Materials</button>
+                                    <div className="px-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 mb-1">Data Repositories</div>
+                                    <button onClick={() => { setView(View.MANAGE_CLIENTS); setIsDbMenuOpen(false); }} className="w-full text-left px-3 py-2.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-3 font-bold border-b border-slate-50"><Icon name="fas fa-building" className="text-indigo-600 w-4"/> Client Database</button>
+                                    <button onClick={() => { setView(View.MANAGE_CONTACTS); setIsDbMenuOpen(false); }} className="w-full text-left px-3 py-2.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-3 font-bold border-b border-slate-50"><Icon name="fas fa-address-card" className="text-teal-600 w-4"/> Personnel Records</button>
+                                    <button onClick={() => { setView(View.MANAGE_MATERIALS); setIsDbMenuOpen(false); }} className="w-full text-left px-3 py-2.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-3 font-bold border-b border-slate-50"><Icon name="fas fa-boxes" className="text-rose-600 w-4"/> Material Inventory</button>
                                     <button onClick={() => { setView(View.FEEDBACK_JOURNAL); setIsDbMenuOpen(false); }} className="w-full text-left px-3 py-2.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-3 font-bold border-b border-slate-50"><Icon name="fas fa-comments" className="text-amber-600 w-4"/> Feedback Journal</button>
                                     {isAdmin && (
                                         <>
-                                            <div className="px-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 mt-1 mb-1">Control</div>
-                                            <button onClick={() => { setView(View.MANAGE_USERS); setIsDbMenuOpen(false); }} className="w-full text-left px-3 py-2.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-3 font-bold"><Icon name="fas fa-users-cog" className="text-blue-700 w-4"/> Manage Users</button>
+                                            <div className="px-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 mt-1 mb-1">Administrative Control</div>
+                                            <button onClick={() => { setView(View.MANAGE_USERS); setIsDbMenuOpen(false); }} className="w-full text-left px-3 py-2.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-3 font-bold"><Icon name="fas fa-user-shield" className="text-blue-700 w-4"/> User Management & IAM</button>
                                         </>
                                     )}
                                 </div>

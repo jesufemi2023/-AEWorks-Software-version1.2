@@ -256,38 +256,69 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogout }) => {
                     </div>
                 </div>
 
-                <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                    <div onClick={() => onNavigate('project-board')} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group">
-                        <div className="w-16 h-16 rounded-[1.5rem] bg-blue-50 text-blue-600 flex items-center justify-center text-3xl mb-6 shadow-inner"><Icon name="fas fa-project-diagram" /></div>
-                        <h3 className="font-black text-xl text-slate-900 uppercase tracking-tighter">Project</h3>
+                <section>
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-2 h-8 bg-blue-600 rounded-full"></div>
+                        <h2 className="text-2xl font-black uppercase tracking-tighter text-slate-900">Core Operations</h2>
                     </div>
-                    <div onClick={() => onNavigate('work-manager')} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group">
-                        <div className="w-16 h-16 rounded-[1.5rem] bg-emerald-50 text-emerald-600 flex items-center justify-center text-3xl mb-6 shadow-inner"><Icon name="fas fa-bolt" /></div>
-                        <h3 className="font-black text-xl text-slate-900 uppercase tracking-tighter">Production</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div onClick={() => onNavigate('project-board')} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group">
+                            <div className="w-16 h-16 rounded-[1.5rem] bg-blue-50 text-blue-600 flex items-center justify-center text-3xl mb-6 shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-all"><Icon name="fas fa-project-diagram" /></div>
+                            <h3 className="font-black text-xl text-slate-900 uppercase tracking-tighter">Project Tracker</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase mt-2 tracking-widest">Manage workflows & job stages</p>
+                        </div>
+                        <div onClick={() => onNavigate('work-manager')} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group">
+                            <div className="w-16 h-16 rounded-[1.5rem] bg-emerald-50 text-emerald-600 flex items-center justify-center text-3xl mb-6 shadow-inner group-hover:bg-emerald-600 group-hover:text-white transition-all"><Icon name="fas fa-bolt" /></div>
+                            <h3 className="font-black text-xl text-slate-900 uppercase tracking-tighter">Production</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase mt-2 tracking-widest">Real-time factory floor management</p>
+                        </div>
+                        <div onClick={() => onNavigate('payroll-manager')} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group">
+                            <div className="w-16 h-16 rounded-[1.5rem] bg-amber-50 text-amber-600 flex items-center justify-center text-3xl mb-6 shadow-inner group-hover:bg-amber-600 group-hover:text-white transition-all"><Icon name="fas fa-hand-holding-usd" /></div>
+                            <h3 className="font-black text-xl text-slate-900 uppercase tracking-tighter">Payroll Hub</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase mt-2 tracking-widest">Staff payments & financial records</p>
+                        </div>
+                        <div onClick={() => onNavigate('feedback-journal')} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group relative">
+                            {stats.pendingFeedback > 0 && (
+                                <div className="absolute top-6 right-6 bg-amber-500 text-slate-900 text-[10px] font-black px-2 py-1 rounded-full animate-bounce shadow-lg shadow-amber-500/20">
+                                    {stats.pendingFeedback} NEW
+                                </div>
+                            )}
+                            <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-50 text-indigo-600 flex items-center justify-center text-3xl mb-6 shadow-inner group-hover:bg-indigo-600 group-hover:text-white transition-all"><Icon name="fas fa-comments" /></div>
+                            <h3 className="font-black text-xl text-slate-900 uppercase tracking-tighter">Customer Portal</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase mt-2 tracking-widest">Feedback & digital signatures</p>
+                        </div>
                     </div>
-                    <div onClick={() => onNavigate('payroll-manager')} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group">
-                        <div className="w-16 h-16 rounded-[1.5rem] bg-amber-50 text-amber-600 flex items-center justify-center text-3xl mb-6 shadow-inner"><Icon name="fas fa-hand-holding-usd" /></div>
-                        <h3 className="font-black text-xl text-slate-900 uppercase tracking-tighter">Payroll</h3>
+                </section>
+
+                <section>
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-2 h-8 bg-slate-900 rounded-full"></div>
+                        <h2 className="text-2xl font-black uppercase tracking-tighter text-slate-900">System Administration</h2>
                     </div>
-                    <div onClick={() => onNavigate('feedback-journal')} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group relative">
-                        {stats.pendingFeedback > 0 && (
-                            <div className="absolute top-6 right-6 bg-amber-500 text-slate-900 text-[10px] font-black px-2 py-1 rounded-full animate-bounce shadow-lg shadow-amber-500/20">
-                                {stats.pendingFeedback} NEW
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div onClick={() => { localStorage.setItem('redirect_view', 'MANAGE_CENTRES'); onNavigate('project-board'); }} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group">
+                            <div className="w-16 h-16 rounded-[1.5rem] bg-slate-100 text-slate-600 flex items-center justify-center text-3xl mb-6 shadow-inner group-hover:bg-slate-900 group-hover:text-white transition-all"><Icon name="fas fa-warehouse" /></div>
+                            <h3 className="font-black text-xl text-slate-900 uppercase tracking-tighter">Facilities</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase mt-2 tracking-widest">Manage production centres</p>
+                        </div>
+                        {(currentUser?.role === 'admin' || currentUser?.role === 'superadmin') && (
+                            <div onClick={() => { localStorage.setItem('redirect_view', 'MANAGE_USERS'); onNavigate('project-board'); }} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group">
+                                <div className="w-16 h-16 rounded-[1.5rem] bg-blue-100 text-blue-900 flex items-center justify-center text-3xl mb-6 shadow-inner group-hover:bg-blue-900 group-hover:text-white transition-all"><Icon name="fas fa-user-shield" /></div>
+                                <h3 className="font-black text-xl text-slate-900 uppercase tracking-tighter">User Access</h3>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase mt-2 tracking-widest">IAM & Security Protocols</p>
                             </div>
                         )}
-                        <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-50 text-indigo-600 flex items-center justify-center text-3xl mb-6 shadow-inner"><Icon name="fas fa-comments" /></div>
-                        <h3 className="font-black text-xl text-slate-900 uppercase tracking-tighter">Feedback</h3>
-                    </div>
-                    <div onClick={() => { localStorage.setItem('redirect_view', 'MANAGE_CENTRES'); onNavigate('project-board'); }} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group">
-                        <div className="w-16 h-16 rounded-[1.5rem] bg-slate-900 text-white flex items-center justify-center text-3xl mb-6 shadow-inner"><Icon name="fas fa-warehouse" /></div>
-                        <h3 className="font-black text-xl text-slate-900 uppercase tracking-tighter">Facilities</h3>
-                    </div>
-                    {(currentUser?.role === 'admin' || currentUser?.role === 'superadmin') && (
-                        <div onClick={() => { localStorage.setItem('redirect_view', 'MANAGE_USERS'); onNavigate('project-board'); }} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group">
-                            <div className="w-16 h-16 rounded-[1.5rem] bg-blue-900 text-white flex items-center justify-center text-3xl mb-6 shadow-inner"><Icon name="fas fa-users-cog" /></div>
-                            <h3 className="font-black text-xl text-slate-900 uppercase tracking-tighter">Manage Users</h3>
+                        <div onClick={() => { localStorage.setItem('redirect_view', 'MANAGE_MATERIALS'); onNavigate('project-board'); }} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group">
+                            <div className="w-16 h-16 rounded-[1.5rem] bg-rose-50 text-rose-600 flex items-center justify-center text-3xl mb-6 shadow-inner group-hover:bg-rose-600 group-hover:text-white transition-all"><Icon name="fas fa-boxes" /></div>
+                            <h3 className="font-black text-xl text-slate-900 uppercase tracking-tighter">Inventory</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase mt-2 tracking-widest">Material & Stock Control</p>
                         </div>
-                    )}
+                        <div onClick={() => { localStorage.setItem('redirect_view', 'MANAGE_CLIENTS'); onNavigate('project-board'); }} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group">
+                            <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-50 text-indigo-600 flex items-center justify-center text-3xl mb-6 shadow-inner group-hover:bg-indigo-600 group-hover:text-white transition-all"><Icon name="fas fa-building" /></div>
+                            <h3 className="font-black text-xl text-slate-900 uppercase tracking-tighter">Clients</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase mt-2 tracking-widest">Customer Database Management</p>
+                        </div>
+                    </div>
                 </section>
             </main>
             <HelpGuideModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />

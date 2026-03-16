@@ -139,13 +139,37 @@ const CrudTable = <T extends { id: string },>({ columns, data, onSave, newItemFa
                                                 <div className="flex justify-center gap-2">
                                                     {isEditing ? (
                                                         <>
-                                                            <button onClick={() => handleSaveRow(item.id)} className="text-green-700 hover:text-green-900 p-2 bg-green-100 rounded-lg shadow-sm" title="Commit changes"><Icon name="fas fa-check" /></button>
-                                                            <button onClick={handleCancel} className="text-slate-600 hover:text-red-700 p-2 bg-slate-200 rounded-lg shadow-sm" title="Abort"><Icon name="fas fa-times" /></button>
+                                                            <button 
+                                                                onClick={() => handleSaveRow(item.id)} 
+                                                                className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-[10px] font-black uppercase rounded-lg hover:bg-green-700 transition-all shadow-sm"
+                                                            >
+                                                                <Icon name="fas fa-check" />
+                                                                <span>Save</span>
+                                                            </button>
+                                                            <button 
+                                                                onClick={handleCancel} 
+                                                                className="flex items-center gap-1 px-3 py-1.5 bg-slate-200 text-slate-600 text-[10px] font-black uppercase rounded-lg hover:bg-slate-300 transition-all shadow-sm"
+                                                            >
+                                                                <Icon name="fas fa-times" />
+                                                                <span>Cancel</span>
+                                                            </button>
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <button onClick={() => setEditingId(item.id)} className="text-blue-600 hover:text-blue-800 p-2 bg-blue-50 rounded-lg shadow-sm" title="Edit row"><Icon name="fas fa-pen" /></button>
-                                                            <button onClick={() => handleDelete(item.id)} className="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-lg transition-colors" title="Remove Record"><Icon name="fas fa-trash" /></button>
+                                                            <button 
+                                                                onClick={() => setEditingId(item.id)} 
+                                                                className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 text-[10px] font-black uppercase rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm border border-blue-100"
+                                                            >
+                                                                <Icon name="fas fa-pen" />
+                                                                <span>Edit</span>
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => handleDelete(item.id)} 
+                                                                className="flex items-center gap-1 px-3 py-1.5 bg-red-50 text-red-500 text-[10px] font-black uppercase rounded-lg hover:bg-red-600 hover:text-white transition-all shadow-sm border border-red-100"
+                                                            >
+                                                                <Icon name="fas fa-trash" />
+                                                                <span>Delete</span>
+                                                            </button>
                                                         </>
                                                     )}
                                                 </div>
