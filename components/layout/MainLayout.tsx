@@ -75,6 +75,9 @@ const MainLayout: React.FC<{onBack?: () => void}> = ({ onBack }) => {
         } else if (redirectView === 'MANAGE_CENTRES') {
             setView(View.MANAGE_CENTRES);
             localStorage.removeItem('redirect_view');
+        } else if (redirectView === 'MANAGE_USERS') {
+            setView(View.MANAGE_USERS);
+            localStorage.removeItem('redirect_view');
         }
     }, []);
 

@@ -282,6 +282,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogout }) => {
                         <div className="w-16 h-16 rounded-[1.5rem] bg-slate-900 text-white flex items-center justify-center text-3xl mb-6 shadow-inner"><Icon name="fas fa-warehouse" /></div>
                         <h3 className="font-black text-xl text-slate-900 uppercase tracking-tighter">Facilities</h3>
                     </div>
+                    {(currentUser?.role === 'admin' || currentUser?.role === 'superadmin') && (
+                        <div onClick={() => { localStorage.setItem('redirect_view', 'MANAGE_USERS'); onNavigate('project-board'); }} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group">
+                            <div className="w-16 h-16 rounded-[1.5rem] bg-blue-900 text-white flex items-center justify-center text-3xl mb-6 shadow-inner"><Icon name="fas fa-users-cog" /></div>
+                            <h3 className="font-black text-xl text-slate-900 uppercase tracking-tighter">Manage Users</h3>
+                        </div>
+                    )}
                 </section>
             </main>
             <HelpGuideModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />

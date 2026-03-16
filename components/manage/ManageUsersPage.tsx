@@ -141,7 +141,7 @@ const ManageUsersPage: React.FC<ManageUsersPageProps> = ({ goBack }) => {
     }
 
     return (
-        <ManagePage title="Access Key Management" icon="fas fa-user-shield" goBack={goBack}>
+        <ManagePage title="User Management & IAM" icon="fas fa-users-cog" goBack={goBack}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
                 <div className="lg:col-span-2 bg-slate-900 text-white p-6 rounded-2xl shadow-xl">
                     <h4 className="text-lg font-black flex items-center gap-3 mb-2 uppercase tracking-tighter">
@@ -181,7 +181,7 @@ const ManageUsersPage: React.FC<ManageUsersPageProps> = ({ goBack }) => {
                 data={users}
                 onSave={handleSaveList}
                 newItemFactory={() => ({ id: db.generateId(), username: '', email: '', password: '', role: 'viewer' })}
-                itemName="Access Key"
+                itemName="User"
                 hideAddButton={true}
             />
             

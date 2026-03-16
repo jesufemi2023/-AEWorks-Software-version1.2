@@ -18,7 +18,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ setView, onBack }) => {
     const { 
         currentProject, projects, setProjects, setCurrentProject, resetProject,
         setClients, setContacts, setCentres, setFramingMaterials, setFinishMaterials,
-        updateProject
+        updateProject, deleteProject
     } = useProjectContext();
     
     const { currentUser, setCurrentUser, showNotification } = useAppContext();
@@ -204,9 +204,27 @@ const Toolbar: React.FC<ToolbarProps> = ({ setView, onBack }) => {
                         </Button>
                     )}
                     {!canEditCurrentProject() ? null : (
-                        <Button onClick={handleSaveProject} variant="primary" icon={isCommitting ? "fas fa-sync animate-spin" : "fas fa-save"} disabled={isCommitting} size="sm" className="whitespace-nowrap py-1.5 px-3 text-[10px] uppercase font-black">
-                            {commitStatus === 'saving' ? 'Saving...' : commitStatus === 'syncing' ? 'Syncing...' : 'Commit'}
-                        </Button>
+                        <>
+                            <Button onClick={handleSaveProject} variant="primary" icon={isCommitting ? "fas fa-sync animate-spin" : "fas fa-save"} disabled={isCommitting} size="sm" className="whitespace-nowrap py-1.5 px-3 text-[10px] uppercase font-black">
+                                {commitStatus === 'saving' ? 'Saving...' : commitStatus === 'syncing' ? 'Syncing...' : 'Save Project'}
+                            </Button>
+                            {currentProject.projectCode && (
+                                <Button 
+                                    onClick={() => {
+                                        if (window.confirm(`SECURITY PROTOCOL: Are you sure you want to permanently delete project ${currentProject.projectCode}? This action cannot be undone.`)) {
+                                            deleteProject(currentProject.projectCode);
+                                            showNotification(`Project ${currentProject.projectCode} deleted.`, 'warning');
+                                        }
+                                    }} 
+                                    variant="outline" 
+                                    icon="fas fa-trash" 
+                                    size="sm" 
+                                    className="whitespace-nowrap py-1.5 px-3 text-[10px] uppercase font-black border-red-200 text-red-500 hover:bg-red-50"
+                                >
+                                    Delete
+                                </Button>
+                            )}
+                        </>
                     )}
                     <Button onClick={() => setIsProjectListOpen(true)} variant="success" icon="fas fa-folder-open" size="sm" className="whitespace-nowrap py-1.5 px-3 text-[10px] uppercase font-black">Load</Button>
                     <Button onClick={() => { resetProject(); setView(View.DASHBOARD); }} variant="warning" icon="fas fa-file" size="sm" className="whitespace-nowrap py-1.5 px-3 text-[10px] uppercase font-black">New</Button>
@@ -247,7 +265,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ setView, onBack }) => {
                                     {isAdmin && (
                                         <>
                                             <div className="px-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 mt-1 mb-1">Control</div>
-                                            <button onClick={() => { setView(View.MANAGE_USERS); setIsDbMenuOpen(false); }} className="w-full text-left px-3 py-2.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-3 font-bold"><Icon name="fas fa-user-shield" className="text-blue-700 w-4"/> Access Keys</button>
+                                            <button onClick={() => { setView(View.MANAGE_USERS); setIsDbMenuOpen(false); }} className="w-full text-left px-3 py-2.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-3 font-bold"><Icon name="fas fa-users-cog" className="text-blue-700 w-4"/> Manage Users</button>
                                         </>
                                     )}
                                 </div>

@@ -83,10 +83,11 @@ const ProjectTrackerBoard: React.FC<{setView: (view: View) => void}> = ({ setVie
                                                 {!canEditProject(project) ? null : (
                                                     <button 
                                                         onClick={() => handleDelete(project.projectCode)}
-                                                        className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors ml-1"
+                                                        className="flex items-center gap-1 text-[9px] font-black uppercase px-2.5 py-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all ml-1"
                                                         title="Delete Project"
                                                     >
                                                         <Icon name="fas fa-trash" />
+                                                        <span>Delete</span>
                                                     </button>
                                                 )}
                                             </div>
