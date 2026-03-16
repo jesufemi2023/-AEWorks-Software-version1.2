@@ -7,7 +7,6 @@ import ProjectListModal from './ProjectListModal';
 import { useProjectContext } from '../../hooks/useProjectContext';
 import { useAppContext } from '../../hooks/useAppContext';
 import * as db from '../../services/db';
-import { vaultService } from '../../services/vaultService';
 
 interface ToolbarProps {
     setView: (view: View) => void;
@@ -84,12 +83,13 @@ const Toolbar: React.FC<ToolbarProps> = ({ setView, onBack }) => {
                         return;
                     }
                     showNotification("Establishing identity handshake...", "warning");
-                    vaultService.setToken(response.access_token);
-                    const result = await db.syncWithCloud();
+                    const result = await db.syncWithCloud(response.access_token);
                     setIsSyncing(false);
                     if (result.success) {
                         showNotification(result.message, 'success');
                         refreshAppState();
+                    } else if (result.vaultMissing) {
+                        showNotification(result.message, 'error');
                     } else {
                         showNotification(result.message, 'warning');
                     }

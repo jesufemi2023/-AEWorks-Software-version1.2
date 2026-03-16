@@ -81,13 +81,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogout }) => {
             showNotification("Please link cloud repository first.", "warning");
             return;
         }
-        
-        // Ensure vaultService has the token
-        const { vaultService } = await import('../../services/vaultService');
-        if (!vaultService.getToken()) {
-            vaultService.setToken(meta.driveAccessToken);
-        }
-
         setIsSyncing(true);
         const res = await db.syncWithCloud();
         setIsSyncing(false);
@@ -101,13 +94,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogout }) => {
 
     const handleCheckInbox = async () => {
         if (!meta.driveAccessToken) return;
-
-        // Ensure vaultService has the token
-        const { vaultService } = await import('../../services/vaultService');
-        if (!vaultService.getToken()) {
-            vaultService.setToken(meta.driveAccessToken);
-        }
-
         setIsCheckingInbox(true);
         const res = await db.syncInboxFeedback((code) => {
             showNotification(`New feedback ingested for ${code}`, "success");

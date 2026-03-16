@@ -1,6 +1,4 @@
 
-import { vaultService } from './vaultService';
-
 export const generateId = () => {
     try {
         if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -120,108 +118,235 @@ export const updateSystemMeta = (meta: Partial<SystemMeta>): void => {
 };
 
 export const DB_KEYS = ['clients', 'contacts', 'centres', 'framingMaterials', 'finishMaterials', 'projects', 'users', 'payrollRuns', 'defaultCostingVariables', 'productionLogs', 'locationExpenses', 'unassignedFeedback'];
+const MASTER_FILE_NAME = "AEWORKS_MASTER_VAULT.json";
+const INBOX_FOLDER_NAME = "AEWORKS_INBOX";
 
-export const syncWithCloud = async (onNewFeedback?: (projectCode: string) => void): Promise<{success: boolean, message: string}> => {
+const getDriveHeaders = (token: string) => ({
+    'Authorization': `Bearer ${token}`
+});
+
+export const syncInboxFeedback = async (onNewFeedback?: (code: string) => void): Promise<{ success: boolean, count: number }> => {
+    const meta = getSystemMeta();
+    const token = meta.driveAccessToken;
+    if (!token) return { success: false, count: 0 };
+
     try {
-        // 1. Fetch Global Data (Clients, Materials, etc.)
-        const globalData = await vaultService.fetchGlobalData();
-        if (globalData) {
-            DB_KEYS.forEach(key => {
-                if (key !== 'projects' && globalData[key]) {
-                    const local = getData<any>(key);
-                    const remote = globalData[key];
-                    const merged = mergeDatasets(key, local, remote);
-                    localStorage.setItem(key, JSON.stringify(merged));
-                }
-            });
+        console.log("Inbox Sync: Searching for folder", INBOX_FOLDER_NAME);
+        const folderQuery = encodeURIComponent(`name='${INBOX_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+        const folderRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=${folderQuery}&supportsAllDrives=true&includeItemsFromAllDrives=true`, { headers: getDriveHeaders(token) });
+        const folderData = await folderRes.json();
+        
+        if (!folderData.files || folderData.files.length === 0) {
+            console.warn("Inbox Sync: AEWORKS_INBOX folder not found or inaccessible.");
+            return { success: true, count: 0 };
         }
 
-        // 2. Fetch all Projects
-        const remoteProjects = await vaultService.fetchAllProjects();
-        const localProjects = getData<any>('projects');
-        const mergedProjects = mergeDatasets('projects', localProjects, remoteProjects);
-        localStorage.setItem('projects', JSON.stringify(mergedProjects));
+        let totalProcessed = 0;
+        const projects = getData<any>('projects');
+        const unassigned = getData<any>('unassignedFeedback');
+        let projectsUpdated = false;
+        let unassignedUpdated = false;
+        const normalize = (s: string) => s.replace(/[^A-Z0-9]/gi, '').toUpperCase();
 
-        updateSystemMeta({ lastCloudSync: new Date().toISOString() });
+        for (const folder of folderData.files) {
+            const filesQuery = encodeURIComponent(`'${folder.id}' in parents and trashed=false`);
+            const filesRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=${filesQuery}&fields=files(id, name, mimeType)&supportsAllDrives=true&includeItemsFromAllDrives=true`, { headers: getDriveHeaders(token) });
+            const filesData = await filesRes.json();
+            
+            const files = filesData.files || [];
+            if (files.length === 0) continue;
+
+            for (const file of files) {
+                try {
+                    const contentRes = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, { headers: getDriveHeaders(token) });
+                    if (!contentRes.ok) continue;
+
+                    const rawText = await contentRes.text();
+                    let feedbackData;
+                    try {
+                        feedbackData = JSON.parse(rawText.trim());
+                    } catch (parseErr) {
+                        continue;
+                    }
+
+                    if (!feedbackData || !feedbackData.code) continue;
+
+                    const incomingNormal = normalize(feedbackData.code);
+                    const incomingBase = normalize(feedbackData.code.split('.')[0]);
+
+                    const projIdx = projects.findIndex((p: any) => {
+                        const localNormal = normalize(p.projectCode || '');
+                        const localBase = normalize((p.projectCode || '').split('.')[0]);
+                        return localNormal === incomingNormal || localBase === incomingBase;
+                    });
+                    
+                    if (projIdx > -1) {
+                        const project = projects[projIdx];
+                        project.trackingData = {
+                            ...(project.trackingData || {}),
+                            customerFeedback: feedbackData.feedback,
+                            feedbackStatus: 'received'
+                        };
+                        
+                        // AUTO-ACTIVATE CLOSEOUT: Advance status to 100 if project was shipped (95)
+                        if (project.projectStatus === '95') {
+                            project.projectStatus = '100';
+                            console.log(`Inbox Sync: Auto-advanced project ${project.projectCode} to Closeout stage.`);
+                        }
+                        
+                        project.updatedAt = new Date().toISOString();
+                        projectsUpdated = true;
+                        if (onNewFeedback) onNewFeedback(project.projectCode);
+                    } else {
+                        unassigned.push({
+                            id: generateId(),
+                            originalCode: feedbackData.code,
+                            feedback: feedbackData.feedback,
+                            receivedAt: new Date().toISOString()
+                        });
+                        unassignedUpdated = true;
+                    }
+
+                    const delRes = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?supportsAllDrives=true`, { method: 'DELETE', headers: getDriveHeaders(token) });
+                    if (delRes.ok) totalProcessed++;
+                } catch (e) {
+                    console.error(`Inbox Sync failure for file ${file.id}:`, e);
+                }
+            }
+        }
+
+        if (projectsUpdated) saveData('projects', projects);
+        if (unassignedUpdated) saveData('unassignedFeedback', unassigned);
         
-        // 3. Sync Inbox Feedback
-        await syncInboxFeedback(onNewFeedback);
-
-        window.dispatchEvent(new CustomEvent('aeworks_db_update', { detail: { key: 'all' } }));
-        return { success: true, message: "Master Vault Sync Success." };
-    } catch (err: any) {
-        console.error('Master Vault Sync Error:', err);
-        return { success: false, message: "Vault Sync Failed." };
+        if (projectsUpdated || unassignedUpdated) {
+            window.dispatchEvent(new CustomEvent('aeworks_db_update', { detail: { key: 'projects' } }));
+            await pushToCloud();
+        }
+        
+        return { success: true, count: totalProcessed };
+    } catch (err) {
+        return { success: false, count: 0 };
     }
+};
+
+export const syncWithCloud = async (providedToken?: string, onNewFeedback?: (code: string) => void): Promise<{success: boolean, message: string, vaultMissing?: boolean}> => {
+    const meta = getSystemMeta();
+    const token = providedToken || meta.driveAccessToken;
+    if (!token) return { success: false, message: "Drive Auth Required." };
+
+    if (providedToken) {
+        updateSystemMeta({ driveAccessToken: providedToken });
+    }
+
+    try {
+        const query = encodeURIComponent(`name='${MASTER_FILE_NAME}' and trashed=false`);
+        const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id, name)&supportsAllDrives=true&includeItemsFromAllDrives=true`, { headers: getDriveHeaders(token) });
+        const searchData = await searchRes.json();
+        const foundFile = (searchData.files || [])[0];
+
+        if (!foundFile) {
+            const expectedEmail = meta.masterCorporateEmail || "the authorized corporate account";
+            return { 
+                success: false, 
+                message: `Master Vault not found. Please authenticate using the correct account: ${expectedEmail}.`,
+                vaultMissing: true
+            };
+        }
+
+        const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${foundFile.id}?alt=media`, { headers: getDriveHeaders(token) });
+        const actualData = await fileRes.json();
+
+        DB_KEYS.forEach(key => {
+            const local = getData<any>(key);
+            const remote = actualData[key] || [];
+            const merged = mergeDatasets(key, local, remote);
+            localStorage.setItem(key, JSON.stringify(merged));
+        });
+
+        // Fetch user email to ensure we have it if missing
+        let connectedEmail = (meta as any).connectedEmail;
+        if (!connectedEmail) {
+            try {
+                const userRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: getDriveHeaders(token) });
+                if (userRes.ok) {
+                    const userData = await userRes.json();
+                    connectedEmail = userData.email;
+                }
+            } catch (e) {}
+        }
+
+        updateSystemMeta({ driveFileId: foundFile.id, driveAccessToken: token, lastCloudSync: new Date().toISOString(), connectedEmail } as any);
+        
+        await syncInboxFeedback(onNewFeedback);
+        
+        window.dispatchEvent(new CustomEvent('aeworks_db_update', { detail: { key: 'all' } }));
+        return { success: true, message: "Synchronized." };
+    } catch (err: any) {
+        return { success: false, message: "Connection Error." };
+    }
+};
+
+export const initializeMasterVault = async (providedToken?: string): Promise<{success: boolean, message: string}> => {
+    const meta = getSystemMeta();
+    const token = providedToken || meta.driveAccessToken;
+    if (!token) return { success: false, message: "Drive Auth Required." };
+
+    if (providedToken) {
+        updateSystemMeta({ driveAccessToken: providedToken });
+    }
+
+    const pushRes = await pushToCloud();
+    if (!pushRes.success) {
+        return { success: false, message: "Failed to initialize vault: " + pushRes.message };
+    }
+    
+    let email = (meta as any).connectedEmail;
+    try {
+        const userRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: getDriveHeaders(token) });
+        if (userRes.ok) {
+            const userData = await userRes.json();
+            email = userData.email;
+        }
+    } catch (e) {}
+    
+    updateSystemMeta({ masterCorporateEmail: email, connectedEmail: email } as any);
+    
+    window.dispatchEvent(new CustomEvent('aeworks_db_update', { detail: { key: 'all' } }));
+    return { success: true, message: "New Master Vault Initialized." };
 };
 
 export const pushToCloud = async (): Promise<{success: boolean, message: string}> => {
-    try {
-        // 1. Push Global Data
-        const globalData: any = {};
-        DB_KEYS.forEach(key => {
-            if (key !== 'projects') globalData[key] = getData(key);
-        });
-        await vaultService.saveGlobalData(globalData);
+    let meta = getSystemMeta();
+    const token = meta.driveAccessToken;
+    if (!token) return { success: false, message: "Offline." };
 
-        // 2. Push all Projects (one by one for consistency)
-        const projects = getData<any>('projects');
-        for (const project of projects) {
-            await vaultService.saveProject(project);
+    try {
+        const fullDB: any = { _meta: { lastPush: new Date().toISOString() } };
+        DB_KEYS.forEach(key => fullDB[key] = getData(key));
+        const metadata = { name: MASTER_FILE_NAME, mimeType: 'application/json' };
+        let fileId = meta.driveFileId;
+
+        if (!fileId) {
+            const createRes = await fetch('https://www.googleapis.com/drive/v3/files?supportsAllDrives=true', {
+                method: 'POST', 
+                headers: { ...getDriveHeaders(token), 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(metadata)
+            });
+            const createData = await createRes.json();
+            fileId = createData.id;
+            updateSystemMeta({ driveFileId: fileId });
         }
+
+        await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media&supportsAllDrives=true`, {
+            method: 'PATCH', 
+            headers: { ...getDriveHeaders(token), 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(fullDB)
+        });
 
         updateSystemMeta({ lastCloudSync: new Date().toISOString() });
-        return { success: true, message: "Master Vault Push Success." };
+        return { success: true, message: "Push Success." };
     } catch (err: any) {
-        console.error('Master Vault Push Error:', err);
-        return { success: false, message: "Vault Push Failed." };
-    }
-};
-
-export const syncInboxFeedback = async (onNewFeedback?: (projectCode: string) => void): Promise<{success: boolean, count: number}> => {
-    try {
-        const feedbackFiles = await vaultService.fetchInboxFeedback();
-        if (!feedbackFiles || feedbackFiles.length === 0) return { success: true, count: 0 };
-
-        let count = 0;
-        const projects = getData<any>('projects');
-
-        for (const file of feedbackFiles) {
-            const { projectCode, feedback, fileId } = file;
-            const projectIndex = projects.findIndex(p => p.projectCode === projectCode);
-
-            if (projectIndex !== -1) {
-                // Update project tracking data
-                projects[projectIndex] = {
-                    ...projects[projectIndex],
-                    trackingData: {
-                        ...projects[projectIndex].trackingData,
-                        feedbackStatus: 'received',
-                        customerFeedback: feedback,
-                        receivedAt: new Date().toISOString()
-                    }
-                };
-                count++;
-                if (onNewFeedback) onNewFeedback(projectCode);
-            } else {
-                // Store in unassigned feedback if project not found
-                const unassigned = getData<any>('unassignedFeedback');
-                unassigned.push({ ...file, receivedAt: new Date().toISOString() });
-                saveData('unassignedFeedback', unassigned);
-            }
-
-            // Delete from cloud inbox after processing
-            await vaultService.deleteInboxFeedback(fileId);
-        }
-
-        if (count > 0) {
-            saveData('projects', projects);
-        }
-
-        return { success: true, count };
-    } catch (err) {
-        console.error('Inbox Sync Error:', err);
-        return { success: false, count: 0 };
+        return { success: false, message: "Push Error." };
     }
 };
 
